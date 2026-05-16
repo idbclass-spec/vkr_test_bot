@@ -1,45 +1,62 @@
 import os
-from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
+import asyncio
+
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
-menu = types.ReplyKeyboardMarkup(resize_keyboard=True)
-menu.add("Каталог", "Помощь")
-menu.add("Контакты", "О боте")
+menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Каталог"), KeyboardButton(text="Помощь")],
+        [KeyboardButton(text="Контакты"), KeyboardButton(text="О боте")]
+    ],
+    resize_keyboard=True
+)
 
-@dp.message_handler(commands=['start'])
-async def start(message: types.Message):
+
+@dp.message(Command("start"))
+async def start(message: Message):
     await message.answer(
         "Добро пожаловать!\nВыберите действие:",
         reply_markup=menu
     )
 
-@dp.message_handler(commands=['help'])
-async def help_command(message: types.Message):
-    await message.answer(
-        "Доступные команды:\n/start\n/help"
-    )
 
-@dp.message_handler(lambda message: message.text == "Каталог")
-async def catalog(message: types.Message):
+@dp.message(Command("help"))
+async def help_command(message: Message):
+    await message.answer("Доступные команды:\n/start\n/help")
+
+
+@dp.message(F.text == "Каталог")
+async def catalog(message: Message):
     await message.answer("Раздел каталога: список товаров или услуг.")
 
-@dp.message_handler(lambda message: message.text == "Помощь")
-async def help_button(message: types.Message):
+
+@dp.message(F.text == "Помощь")
+async def help_button(message: Message):
     await message.answer("Раздел помощи: выберите интересующий вопрос.")
 
-@dp.message_handler(lambda message: message.text == "Контакты")
-async def contacts(message: types.Message):
+
+@dp.message(F.text == "Контакты")
+async def contacts(message: Message):
     await message.answer("Контакты: example@mail.ru")
 
-@dp.message_handler(lambda message: message.text == "О боте")
-async def about(message: types.Message):
+
+@dp.message(F.text == "О боте")
+async def about(message: Message):
     await message.answer("Данный Telegram-бот демонстрирует menu-driven интерфейс.")
 
-if __name__ == "__main__":
+
+async def main():
     print("Бот запущен...")
-    executor.start_polling(dp, skip_updates=True)
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
