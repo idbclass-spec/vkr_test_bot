@@ -3,7 +3,12 @@ import asyncio
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    CallbackQuery
+)
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
@@ -19,12 +24,40 @@ class Registration(StatesGroup):
     email = State()
 
 
+menu = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="Каталог", callback_data="catalog"),
+            InlineKeyboardButton(text="Помощь", callback_data="help")
+        ],
+        [
+            InlineKeyboardButton(text="Контакты", callback_data="contacts"),
+            InlineKeyboardButton(text="О боте", callback_data="about")
+        ],
+        [
+            InlineKeyboardButton(text="Регистрация", callback_data="register")
+        ]
+    ]
+)
+
+
 @dp.message(Command("start"))
 async def start(message: Message):
     await message.answer(
         "Добро пожаловать!\n"
-        "Для регистрации введите команду /register.\n"
-        "Для отмены используйте /cancel."
+        "Выберите действие:",
+        reply_markup=menu
+    )
+
+
+@dp.message(Command("help"))
+async def help_command(message: Message):
+    await message.answer(
+        "Доступные команды:\n"
+        "/start — главное меню\n"
+        "/help — помощь\n"
+        "/register — регистрация пользователя\n"
+        "/cancel — отмена регистрации"
     )
 
 
@@ -32,6 +65,13 @@ async def start(message: Message):
 async def register_start(message: Message, state: FSMContext):
     await state.set_state(Registration.name)
     await message.answer("Введите ваше имя:")
+
+
+@dp.callback_query(F.data == "register")
+async def register_button(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(Registration.name)
+    await callback.message.answer("Введите ваше имя:")
+    await callback.answer()
 
 
 @dp.message(Registration.name)
@@ -51,7 +91,6 @@ async def get_email(message: Message, state: FSMContext):
         f"Имя: {data['name']}\n"
         f"Электронная почта: {data['email']}"
     )
-
     await state.clear()
 
 
@@ -59,6 +98,39 @@ async def get_email(message: Message, state: FSMContext):
 async def cancel(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("Регистрация отменена.")
+
+
+@dp.callback_query(F.data == "catalog")
+async def catalog(callback: CallbackQuery):
+    await callback.message.answer("Раздел каталога: список товаров или услуг.")
+    await callback.answer()
+
+
+@dp.callback_query(F.data == "help")
+async def help_button(callback: CallbackQuery):
+    await callback.message.answer(
+        "Доступные команды:\n"
+        "/start — главное меню\n"
+        "/help — помощь\n"
+        "/register — регистрация пользователя\n"
+        "/cancel — отмена регистрации"
+    )
+    await callback.answer()
+
+
+@dp.callback_query(F.data == "contacts")
+async def contacts(callback: CallbackQuery):
+    await callback.message.answer("Контакты: example@mail.ru")
+    await callback.answer()
+
+
+@dp.callback_query(F.data == "about")
+async def about(callback: CallbackQuery):
+    await callback.message.answer(
+        "Данный Telegram-бот разработан на Python с использованием библиотеки aiogram.\n"
+        "В боте реализованы command-based, menu-driven и FSM-подходы."
+    )
+    await callback.answer()
 
 
 async def main():
