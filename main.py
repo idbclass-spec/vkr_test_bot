@@ -63,14 +63,12 @@ async def help_command(message: Message):
 
 @dp.message(Command("cancel"))
 async def cancel(message: Message, state: FSMContext):
-    current_state = await state.get_state()
-
-    if current_state is None:
-        await message.answer("Нет активной регистрации.")
-        return
-
     await state.clear()
-    await message.answer("Регистрация отменена.")
+    await message.answer(
+        "Регистрация отменена.\n\n"
+        "Вы вернулись в главное меню.",
+        reply_markup=menu
+    )
 
 
 @dp.message(Command("register"))
@@ -86,14 +84,14 @@ async def register_button(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@dp.message(Registration.name)
+@dp.message(Registration.name, ~F.text.startswith("/"))
 async def get_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     await state.set_state(Registration.email)
     await message.answer("Введите адрес электронной почты:")
 
 
-@dp.message(Registration.email)
+@dp.message(Registration.email, ~F.text.startswith("/"))
 async def get_email(message: Message, state: FSMContext):
     await state.update_data(email=message.text)
     data = await state.get_data()
