@@ -1,68 +1,110 @@
-import os
 import asyncio
+import os
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
 
+# TOKEN
+BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 
-TOKEN = os.getenv("TELEGRAM_TOKEN")
+# Bot & Dispatcher
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
-router = Router()
-
-
-@router.message(Command("start"))
+# -----------------------------
+# /start
+# -----------------------------
+@dp.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer(
-        "Добро пожаловать!\n"
-        "Выберите команду."
+        "👋 Добро пожаловать в Информационный бот!\n\n"
+        "Доступные команды:\n"
+        "/news — последние новости\n"
+        "/world — мировые новости\n"
+        "/tech — технологии\n"
+        "/sport — спорт\n"
+        "/help — помощь\n"
+        "/about — о боте"
     )
 
-
-@router.message(Command("help"))
+# -----------------------------
+# /help
+# -----------------------------
+@dp.message(Command("help"))
 async def cmd_help(message: Message):
     await message.answer(
-        "Доступные команды:\n"
-        "/info\n"
-        "/news\n"
-        "/contacts"
+        "📖 Как пользоваться ботом:\n\n"
+        "/news — показать последние новости\n"
+        "/world — мировые новости\n"
+        "/tech — новости технологий\n"
+        "/sport — спортивные новости\n"
+        "/about — информация о боте"
     )
 
-
-@router.message(Command("info"))
-async def cmd_info(message: Message):
-    await message.answer(
-        "Информация о сервисе..."
-    )
-
-
-@router.message(Command("news"))
+# -----------------------------
+# /news
+# -----------------------------
+@dp.message(Command("news"))
 async def cmd_news(message: Message):
     await message.answer(
-        "Новости сервиса:\n"
-        "На данный момент новых уведомлений нет."
+        "📰 Последние новости:\n\n"
+        "🌍 ООН провела экстренное заседание по климату.\n"
+        "💻 Выпущена новая версия Python 3.14.\n"
+        "⚽ Чемпион мира по футболу определится в финале."
     )
 
-
-@router.message(Command("contacts"))
-async def cmd_contacts(message: Message):
+# -----------------------------
+# /world
+# -----------------------------
+@dp.message(Command("world"))
+async def cmd_world(message: Message):
     await message.answer(
-        "Контакты:\n"
-        "example@mail.ru"
+        "🌍 Мировые новости:\n\n"
+        "• ООН провела экстренное заседание по климату.\n"
+        "• Лидеры G7 договорились о новых мерах сотрудничества."
     )
 
+# -----------------------------
+# /tech
+# -----------------------------
+@dp.message(Command("tech"))
+async def cmd_tech(message: Message):
+    await message.answer(
+        "💻 Новости технологий:\n\n"
+        "• Выпущена новая версия Python 3.14.\n"
+        "• ИИ научился решать сложные математические задачи."
+    )
 
+# -----------------------------
+# /sport
+# -----------------------------
+@dp.message(Command("sport"))
+async def cmd_sport(message: Message):
+    await message.answer(
+        "⚽ Спортивные новости:\n\n"
+        "• Чемпион мира по футболу определится в финале.\n"
+        "• НБА объявила состав команды Всех звёзд."
+    )
+
+# -----------------------------
+# /about
+# -----------------------------
+@dp.message(Command("about"))
+async def cmd_about(message: Message):
+    await message.answer(
+        "ℹ️ О боте\n\n"
+        "Информационный Telegram-бот.\n"
+        "Архитектура: command-based.\n"
+        "Язык разработки: Python + aiogram."
+    )
+
+# -----------------------------
+# START BOT
+# -----------------------------
 async def main():
-    if not TOKEN:
-        raise RuntimeError("TELEGRAM_TOKEN не найден. Добавьте переменную окружения TELEGRAM_TOKEN.")
-
-    bot = Bot(token=TOKEN)
-    dp = Dispatcher()
-    dp.include_router(router)
-
     print("Бот запущен...")
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
